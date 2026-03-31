@@ -1,0 +1,176 @@
+version: "3.8"
+
+# ══════════════════════════════════════════════════════════════
+#   Smart Hostel & Visitor Management System
+#   Docker Compose — All Services + API Gateway + MongoDB
+# ══════════════════════════════════════════════════════════════
+
+services:
+
+  # ─── MongoDB ────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7.0
+    container_name: hostel-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - hostel-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Student Service (Port 3001) ────────────────────────────
+  student-service:
+    build:
+      context: ./student-service
+      dockerfile: Dockerfile
+    container_name: student-service
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGO_URI=mongodb://mongodb:27017/hostel_student_db
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - hostel-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── Room Service (Port 3002) ───────────────────────────────
+  room-service:
+    build:
+      context: ./room-service
+      dockerfile: Dockerfile
+    container_name: room-service
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGO_URI=mongodb://mongodb:27017/hostel_room_db
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - hostel-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3002/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── Visitor Service (Port 3003) ────────────────────────────
+  visitor-service:
+    build:
+      context: ./visitor-service
+      dockerfile: Dockerfile
+    container_name: visitor-service
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGO_URI=mongodb://mongodb:27017/hostel_visitor_db
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - hostel-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3003/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── Complaint Service (Port 3004) ──────────────────────────
+  complaint-service:
+    build:
+      context: ./complaint-service
+      dockerfile: Dockerfile
+    container_name: complaint-service
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - MONGO_URI=mongodb://mongodb:27017/hostel_complaint_db
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - hostel-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3004/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── Maintenance Service (Port 3005) ────────────────────────
+  maintenance-service:
+    build:
+      context: ./maintenance-service
+      dockerfile: Dockerfile
+    container_name: maintenance-service
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      - PORT=3005
+      - MONGO_URI=mongodb://mongodb:27017/hostel_maintenance_db
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - hostel-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3005/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ─── API Gateway (Port 3000) ─────────────────────────────────
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - STUDENT_SERVICE_URL=http://student-service:3001
+      - ROOM_SERVICE_URL=http://room-service:3002
+      - VISITOR_SERVICE_URL=http://visitor-service:3003
+      - COMPLAINT_SERVICE_URL=http://complaint-service:3004
+      - MAINTENANCE_SERVICE_URL=http://maintenance-service:3005
+    depends_on:
+      - student-service
+      - room-service
+      - visitor-service
+      - complaint-service
+      - maintenance-service
+    networks:
+      - hostel-network
+
+# ─── Shared Network ───────────────────────────────────────────
+networks:
+  hostel-network:
+    driver: bridge
+    name: hostel-network
+
+# ─── Persistent Volume for MongoDB ────────────────────────────
+volumes:
+  mongo_data:
+    name: hostel-mongo-data
