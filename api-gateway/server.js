@@ -7,7 +7,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
 
 const SERVICES = {
   student: process.env.STUDENT_SERVICE_URL || "http://localhost:3001",
@@ -18,7 +17,7 @@ const SERVICES = {
 };
 
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.originalUrl}`);
+  console.log(`[GATEWAY] ${req.method} ${req.originalUrl}`);
   next();
 });
 
@@ -28,22 +27,24 @@ const mountService = (basePath, target, serviceName) => {
     createProxyMiddleware({
       target,
       changeOrigin: true,
-      pathRewrite: (path, req) => {
-        return `${basePath}${path === "/" ? "" : path}`;
-      },
+      timeout: 30000,
+      proxyTimeout: 30000,
+      pathRewrite: (path) => `${basePath}${path === "/" ? "" : path}`,
       on: {
         proxyReq: (proxyReq, req) => {
           console.log(
-            `${serviceName} -> ${target}${basePath}${req.url === "/" ? "" : req.url}`
+            `[GATEWAY] ${serviceName} -> ${target}${basePath}${req.url === "/" ? "" : req.url}`
           );
         },
         error: (err, req, res) => {
-          console.error(`${serviceName} proxy error:`, err.message);
-          res.status(503).json({
-            success: false,
-            message: `${serviceName} is unavailable`,
-            error: err.message,
-          });
+          console.error(`[GATEWAY] ${serviceName} proxy error:`, err.message);
+          if (!res.headersSent) {
+            res.status(503).json({
+              success: false,
+              message: `${serviceName} is unavailable`,
+              error: err.message,
+            });
+          }
         },
       },
     })
@@ -60,13 +61,6 @@ app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "API Gateway Running",
-    routes: {
-      students: "/api/students",
-      rooms: "/api/rooms",
-      visitors: "/api/visitors",
-      complaints: "/api/complaints",
-      maintenance: "/api/maintenance",
-    },
   });
 });
 
