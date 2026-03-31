@@ -13,8 +13,12 @@ export default function Visitors() {
   const [editingId, setEditingId] = useState(null);
 
   const fetchVisitors = async () => {
-    const res = await api.get("/api/visitors");
-    setVisitors(res.data);
+    try {
+      const res = await api.get("/api/visitors");
+      setVisitors(res.data);
+    } catch (error) {
+      console.error("Fetch visitors error:", error);
+    }
   };
 
   useEffect(() => {
@@ -39,14 +43,19 @@ export default function Visitors() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editingId) {
-      await api.put(`/api/visitors/${editingId}`, form);
-    } else {
-      await api.post("/api/visitors", form);
-    }
+    try {
+      if (editingId) {
+        await api.put(`/api/visitors/${editingId}`, form);
+      } else {
+        await api.post("/api/visitors", form);
+      }
 
-    resetForm();
-    fetchVisitors();
+      resetForm();
+      fetchVisitors();
+    } catch (error) {
+      console.error("Save visitor error:", error);
+      alert(error.response?.data?.error || error.response?.data?.message || "Failed to save visitor");
+    }
   };
 
   const handleEdit = (item) => {
@@ -61,8 +70,15 @@ export default function Visitors() {
   };
 
   const handleDelete = async (id) => {
-    await api.delete(`/api/visitors/${id}`);
-    fetchVisitors();
+    if (!window.confirm("Are you sure you want to delete this visitor?")) return;
+
+    try {
+      await api.delete(`/api/visitors/${id}`);
+      fetchVisitors();
+    } catch (error) {
+      console.error("Delete visitor error:", error);
+      alert("Failed to delete visitor");
+    }
   };
 
   return (
@@ -75,8 +91,13 @@ export default function Visitors() {
         <input name="contact" placeholder="Contact" value={form.contact} onChange={handleChange} />
         <input name="studentId" placeholder="Student ID" value={form.studentId} onChange={handleChange} />
         <input name="purpose" placeholder="Purpose" value={form.purpose} onChange={handleChange} />
-        <button type="submit">{editingId ? "Update" : "Add Visitor"}</button>
-        {editingId && <button type="button" onClick={resetForm}>Cancel</button>}
+
+        <div className="button-group">
+          <button type="submit">{editingId ? "Update Visitor" : "Add Visitor"}</button>
+          {editingId && (
+            <button type="button" onClick={resetForm}>Cancel</button>
+          )}
+        </div>
       </form>
 
       <table>

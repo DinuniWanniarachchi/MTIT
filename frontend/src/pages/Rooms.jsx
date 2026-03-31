@@ -14,8 +14,12 @@ export default function Rooms() {
   const [editingId, setEditingId] = useState(null);
 
   const fetchRooms = async () => {
-    const res = await api.get("/api/rooms");
-    setRooms(res.data);
+    try {
+      const res = await api.get("/api/rooms");
+      setRooms(res.data);
+    } catch (error) {
+      console.error("Fetch rooms error:", error);
+    }
   };
 
   useEffect(() => {
@@ -48,14 +52,19 @@ export default function Rooms() {
       occupiedBeds: Number(form.occupiedBeds),
     };
 
-    if (editingId) {
-      await api.put(`/api/rooms/${editingId}`, payload);
-    } else {
-      await api.post("/api/rooms", payload);
-    }
+    try {
+      if (editingId) {
+        await api.put(`/api/rooms/${editingId}`, payload);
+      } else {
+        await api.post("/api/rooms", payload);
+      }
 
-    resetForm();
-    fetchRooms();
+      resetForm();
+      fetchRooms();
+    } catch (error) {
+      console.error("Save room error:", error);
+      alert(error.response?.data?.error || error.response?.data?.message || "Failed to save room");
+    }
   };
 
   const handleEdit = (item) => {
@@ -71,8 +80,15 @@ export default function Rooms() {
   };
 
   const handleDelete = async (id) => {
-    await api.delete(`/api/rooms/${id}`);
-    fetchRooms();
+    if (!window.confirm("Are you sure you want to delete this room?")) return;
+
+    try {
+      await api.delete(`/api/rooms/${id}`);
+      fetchRooms();
+    } catch (error) {
+      console.error("Delete room error:", error);
+      alert("Failed to delete room");
+    }
   };
 
   return (
@@ -82,22 +98,27 @@ export default function Rooms() {
       <form className="form" onSubmit={handleSubmit}>
         <input name="roomNumber" placeholder="Room Number" value={form.roomNumber} onChange={handleChange} required />
         <input name="blockName" placeholder="Block Name" value={form.blockName} onChange={handleChange} />
-        <input name="floor" placeholder="Floor" value={form.floor} onChange={handleChange} type="number" />
-        <input name="capacity" placeholder="Capacity" value={form.capacity} onChange={handleChange} type="number" />
-        <input name="occupiedBeds" placeholder="Occupied Beds" value={form.occupiedBeds} onChange={handleChange} type="number" />
+        <input name="floor" type="number" placeholder="Floor" value={form.floor} onChange={handleChange} />
+        <input name="capacity" type="number" placeholder="Capacity" value={form.capacity} onChange={handleChange} />
+        <input name="occupiedBeds" type="number" placeholder="Occupied Beds" value={form.occupiedBeds} onChange={handleChange} />
         <input name="status" placeholder="Status" value={form.status} onChange={handleChange} />
-        <button type="submit">{editingId ? "Update" : "Add Room"}</button>
-        {editingId && <button type="button" onClick={resetForm}>Cancel</button>}
+
+        <div className="button-group">
+          <button type="submit">{editingId ? "Update Room" : "Add Room"}</button>
+          {editingId && (
+            <button type="button" onClick={resetForm}>Cancel</button>
+          )}
+        </div>
       </form>
 
       <table>
         <thead>
           <tr>
-            <th>Room</th>
-            <th>Block</th>
+            <th>Room Number</th>
+            <th>Block Name</th>
             <th>Floor</th>
             <th>Capacity</th>
-            <th>Occupied</th>
+            <th>Occupied Beds</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>

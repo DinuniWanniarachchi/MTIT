@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../api/api";
+import api, { studentApi } from "../api/api";
 
 export default function Students() {
   const [students, setStudents] = useState([]);
@@ -15,7 +15,7 @@ export default function Students() {
 
   const fetchStudents = async () => {
     try {
-      const res = await api.get("/api/students");
+      const res = await studentApi.get("/api/students");
       setStudents(res.data);
     } catch (error) {
       console.error("Fetch students error:", error);
@@ -47,21 +47,16 @@ export default function Students() {
 
     try {
       if (editingId) {
-        await api.put(`/api/students/${editingId}`, form);
+        await studentApi.put(`/api/students/${editingId}`, form);
       } else {
-        await api.post("/api/students", form);
+        await studentApi.post("/api/students", form);
       }
 
       resetForm();
       fetchStudents();
     } catch (error) {
       console.error("Student save error:", error);
-      console.error("Response data:", error.response?.data);
-      alert(
-        error.response?.data?.error ||
-        error.response?.data?.message ||
-        "Failed to save student"
-      );
+      alert(error.response?.data?.error || error.response?.data?.message || "Failed to save student");
     }
   };
 
@@ -78,8 +73,10 @@ export default function Students() {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this student?")) return;
+
     try {
-      await api.delete(`/api/students/${id}`);
+      await studentApi.delete(`/api/students/${id}`);
       fetchStudents();
     } catch (error) {
       console.error("Delete student error:", error);
@@ -92,54 +89,19 @@ export default function Students() {
       <h1>Students</h1>
 
       <form className="form" onSubmit={handleSubmit}>
-        <input
-          name="studentId"
-          placeholder="Student ID"
-          value={form.studentId}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="fullName"
-          placeholder="Full Name"
-          value={form.fullName}
-          onChange={handleChange}
-          required
-        />
-        <input
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-        />
-        <input
-          name="phone"
-          placeholder="Phone"
-          value={form.phone}
-          onChange={handleChange}
-        />
-        <input
-          name="department"
-          placeholder="Department"
-          value={form.department}
-          onChange={handleChange}
-        />
-        <input
-          name="roomNumber"
-          placeholder="Room Number"
-          value={form.roomNumber}
-          onChange={handleChange}
-        />
+        <input name="studentId" placeholder="Student ID" value={form.studentId} onChange={handleChange} required />
+        <input name="fullName" placeholder="Full Name" value={form.fullName} onChange={handleChange} required />
+        <input name="email" placeholder="Email" value={form.email} onChange={handleChange} />
+        <input name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
+        <input name="department" placeholder="Department" value={form.department} onChange={handleChange} />
+        <input name="roomNumber" placeholder="Room Number" value={form.roomNumber} onChange={handleChange} />
 
-        <button type="submit">
-          {editingId ? "Update Student" : "Add Student"}
-        </button>
-
-        {editingId && (
-          <button type="button" onClick={resetForm}>
-            Cancel
-          </button>
-        )}
+        <div className="button-group">
+          <button type="submit">{editingId ? "Update Student" : "Add Student"}</button>
+          {editingId && (
+            <button type="button" onClick={resetForm}>Cancel</button>
+          )}
+        </div>
       </form>
 
       <table>

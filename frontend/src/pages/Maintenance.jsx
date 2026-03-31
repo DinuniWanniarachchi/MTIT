@@ -12,8 +12,12 @@ export default function Maintenance() {
   const [editingId, setEditingId] = useState(null);
 
   const fetchTasks = async () => {
-    const res = await api.get("/api/maintenance");
-    setTasks(res.data);
+    try {
+      const res = await api.get("/api/maintenance");
+      setTasks(res.data);
+    } catch (error) {
+      console.error("Fetch maintenance error:", error);
+    }
   };
 
   useEffect(() => {
@@ -37,14 +41,19 @@ export default function Maintenance() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editingId) {
-      await api.put(`/api/maintenance/${editingId}`, form);
-    } else {
-      await api.post("/api/maintenance", form);
-    }
+    try {
+      if (editingId) {
+        await api.put(`/api/maintenance/${editingId}`, form);
+      } else {
+        await api.post("/api/maintenance", form);
+      }
 
-    resetForm();
-    fetchTasks();
+      resetForm();
+      fetchTasks();
+    } catch (error) {
+      console.error("Save maintenance error:", error);
+      alert(error.response?.data?.error || error.response?.data?.message || "Failed to save task");
+    }
   };
 
   const handleEdit = (item) => {
@@ -58,8 +67,15 @@ export default function Maintenance() {
   };
 
   const handleDelete = async (id) => {
-    await api.delete(`/api/maintenance/${id}`);
-    fetchTasks();
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
+
+    try {
+      await api.delete(`/api/maintenance/${id}`);
+      fetchTasks();
+    } catch (error) {
+      console.error("Delete maintenance error:", error);
+      alert("Failed to delete task");
+    }
   };
 
   return (
@@ -71,8 +87,13 @@ export default function Maintenance() {
         <input name="roomNumber" placeholder="Room Number" value={form.roomNumber} onChange={handleChange} />
         <input name="description" placeholder="Description" value={form.description} onChange={handleChange} />
         <input name="status" placeholder="Status" value={form.status} onChange={handleChange} />
-        <button type="submit">{editingId ? "Update" : "Add Task"}</button>
-        {editingId && <button type="button" onClick={resetForm}>Cancel</button>}
+
+        <div className="button-group">
+          <button type="submit">{editingId ? "Update Task" : "Add Task"}</button>
+          {editingId && (
+            <button type="button" onClick={resetForm}>Cancel</button>
+          )}
+        </div>
       </form>
 
       <table>

@@ -13,8 +13,12 @@ export default function Complaints() {
   const [editingId, setEditingId] = useState(null);
 
   const fetchComplaints = async () => {
-    const res = await api.get("/api/complaints");
-    setComplaints(res.data);
+    try {
+      const res = await api.get("/api/complaints");
+      setComplaints(res.data);
+    } catch (error) {
+      console.error("Fetch complaints error:", error);
+    }
   };
 
   useEffect(() => {
@@ -39,14 +43,19 @@ export default function Complaints() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (editingId) {
-      await api.put(`/api/complaints/${editingId}`, form);
-    } else {
-      await api.post("/api/complaints", form);
-    }
+    try {
+      if (editingId) {
+        await api.put(`/api/complaints/${editingId}`, form);
+      } else {
+        await api.post("/api/complaints", form);
+      }
 
-    resetForm();
-    fetchComplaints();
+      resetForm();
+      fetchComplaints();
+    } catch (error) {
+      console.error("Save complaint error:", error);
+      alert(error.response?.data?.error || error.response?.data?.message || "Failed to save complaint");
+    }
   };
 
   const handleEdit = (item) => {
@@ -61,8 +70,15 @@ export default function Complaints() {
   };
 
   const handleDelete = async (id) => {
-    await api.delete(`/api/complaints/${id}`);
-    fetchComplaints();
+    if (!window.confirm("Are you sure you want to delete this complaint?")) return;
+
+    try {
+      await api.delete(`/api/complaints/${id}`);
+      fetchComplaints();
+    } catch (error) {
+      console.error("Delete complaint error:", error);
+      alert("Failed to delete complaint");
+    }
   };
 
   return (
@@ -75,8 +91,13 @@ export default function Complaints() {
         <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
         <input name="description" placeholder="Description" value={form.description} onChange={handleChange} />
         <input name="status" placeholder="Status" value={form.status} onChange={handleChange} />
-        <button type="submit">{editingId ? "Update" : "Add Complaint"}</button>
-        {editingId && <button type="button" onClick={resetForm}>Cancel</button>}
+
+        <div className="button-group">
+          <button type="submit">{editingId ? "Update Complaint" : "Add Complaint"}</button>
+          {editingId && (
+            <button type="button" onClick={resetForm}>Cancel</button>
+          )}
+        </div>
       </form>
 
       <table>
