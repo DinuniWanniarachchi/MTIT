@@ -8,6 +8,8 @@ const {
   deleteVisitor
 } = require("../controllers/visitorController");
 
+const Visitor = require("../models/Visitor");
+
 /**
  * @swagger
  * /api/visitors:
@@ -39,6 +41,42 @@ router.get("/", getVisitors);
  *         description: Visitor created successfully
  */
 router.post("/", createVisitor);
+
+/**
+ * @swagger
+ * /api/visitors/{id}:
+ *   get:
+ *     summary: Get a visitor by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Visitor MongoDB ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Visitor fetched successfully
+ *       404:
+ *         description: Visitor not found
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    const visitor = await Visitor.findById(req.params.id);
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found"
+      });
+    }
+
+    res.status(200).json(visitor);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 /**
  * @swagger

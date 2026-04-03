@@ -8,6 +8,8 @@ const {
   deleteTask
 } = require("../controllers/maintenanceController");
 
+const Maintenance = require("../models/Maintenance");
+
 /**
  * @swagger
  * /api/maintenance:
@@ -38,6 +40,42 @@ router.get("/", getTasks);
  *         description: Task created successfully
  */
 router.post("/", createTask);
+
+/**
+ * @swagger
+ * /api/maintenance/{id}:
+ *   get:
+ *     summary: Get a maintenance task by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Maintenance MongoDB ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Task fetched successfully
+ *       404:
+ *         description: Task not found
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    const task = await Maintenance.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found"
+      });
+    }
+
+    res.status(200).json(task);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 /**
  * @swagger

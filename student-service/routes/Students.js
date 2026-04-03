@@ -44,6 +44,44 @@ router.post("/", createStudent);
 /**
  * @swagger
  * /api/students/{id}:
+ *   get:
+ *     summary: Get a student by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Student MongoDB ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Student fetched successfully
+ *       404:
+ *         description: Student not found
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    const Student = require("../models/Student");
+
+    const student = await Student.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    res.status(200).json(student);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * @swagger
+ * /api/students/{id}:
  *   put:
  *     summary: Update a student
  *     parameters:
