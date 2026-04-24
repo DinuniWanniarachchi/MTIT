@@ -3,12 +3,11 @@ const router = express.Router();
 
 const {
   getRooms,
+  getRoomById,
   createRoom,
   updateRoom,
   deleteRoom
 } = require("../controllers/roomController");
-
-const Room = require("../models/Room");
 
 /**
  * @swagger
@@ -20,6 +19,26 @@ const Room = require("../models/Room");
  *         description: List of rooms
  */
 router.get("/", getRooms);
+
+/**
+ * @swagger
+ * /api/rooms/{id}:
+ *   get:
+ *     summary: Get a room by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Room MongoDB ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Room fetched successfully
+ *       404:
+ *         description: Room not found
+ */
+router.get("/:id", getRoomById);
 
 /**
  * @swagger
@@ -46,42 +65,6 @@ router.post("/", createRoom);
 /**
  * @swagger
  * /api/rooms/{id}:
- *   get:
- *     summary: Get a room by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Room MongoDB ID
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Room fetched successfully
- *       404:
- *         description: Room not found
- */
-router.get("/:id", async (req, res) => {
-  try {
-    const room = await Room.findById(req.params.id);
-
-    if (!room) {
-      return res.status(404).json({
-        success: false,
-        message: "Room not found"
-      });
-    }
-
-    res.status(200).json(room);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * @swagger
- * /api/rooms/{id}:
  *   put:
  *     summary: Update a room
  *     parameters:
@@ -100,6 +83,8 @@ router.get("/:id", async (req, res) => {
  *     responses:
  *       200:
  *         description: Room updated successfully
+ *       404:
+ *         description: Room not found
  */
 router.put("/:id", updateRoom);
 
@@ -118,6 +103,8 @@ router.put("/:id", updateRoom);
  *     responses:
  *       200:
  *         description: Room deleted successfully
+ *       404:
+ *         description: Room not found
  */
 router.delete("/:id", deleteRoom);
 
