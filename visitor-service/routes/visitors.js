@@ -3,12 +3,11 @@ const router = express.Router();
 
 const {
   getVisitors,
+  getVisitorById,
   createVisitor,
   updateVisitor,
   deleteVisitor
 } = require("../controllers/visitorController");
-
-const Visitor = require("../models/Visitor");
 
 /**
  * @swagger
@@ -20,6 +19,26 @@ const Visitor = require("../models/Visitor");
  *         description: List of visitors
  */
 router.get("/", getVisitors);
+
+/**
+ * @swagger
+ * /api/visitors/{id}:
+ *   get:
+ *     summary: Get a visitor by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Visitor MongoDB ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Visitor fetched successfully
+ *       404:
+ *         description: Visitor not found
+ */
+router.get("/:id", getVisitorById);
 
 /**
  * @swagger
@@ -45,49 +64,13 @@ router.post("/", createVisitor);
 /**
  * @swagger
  * /api/visitors/{id}:
- *   get:
- *     summary: Get a visitor by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Visitor MongoDB ID
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Visitor fetched successfully
- *       404:
- *         description: Visitor not found
- */
-router.get("/:id", async (req, res) => {
-  try {
-    const visitor = await Visitor.findById(req.params.id);
-
-    if (!visitor) {
-      return res.status(404).json({
-        success: false,
-        message: "Visitor not found"
-      });
-    }
-
-    res.status(200).json(visitor);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * @swagger
- * /api/visitors/{id}:
  *   put:
  *     summary: Update a visitor
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: Visitor ID
+ *         description: Visitor MongoDB ID
  *         schema:
  *           type: string
  *     requestBody:
@@ -99,6 +82,8 @@ router.get("/:id", async (req, res) => {
  *     responses:
  *       200:
  *         description: Visitor updated successfully
+ *       404:
+ *         description: Visitor not found
  */
 router.put("/:id", updateVisitor);
 
@@ -111,12 +96,14 @@ router.put("/:id", updateVisitor);
  *       - in: path
  *         name: id
  *         required: true
- *         description: Visitor ID
+ *         description: Visitor MongoDB ID
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: Visitor deleted successfully
+ *       404:
+ *         description: Visitor not found
  */
 router.delete("/:id", deleteVisitor);
 
