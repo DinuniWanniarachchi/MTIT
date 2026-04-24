@@ -3,6 +3,7 @@ const router = express.Router();
 
 const {
   getStudents,
+  getStudentById,
   createStudent,
   updateStudent,
   deleteStudent
@@ -18,6 +19,26 @@ const {
  *         description: Success
  */
 router.get("/", getStudents);
+
+/**
+ * @swagger
+ * /api/students/{id}:
+ *   get:
+ *     summary: Get a student by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Student MongoDB ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Student fetched successfully
+ *       404:
+ *         description: Student not found
+ */
+router.get("/:id", getStudentById);
 
 /**
  * @swagger
@@ -44,8 +65,8 @@ router.post("/", createStudent);
 /**
  * @swagger
  * /api/students/{id}:
- *   get:
- *     summary: Get a student by ID
+ *   put:
+ *     summary: Update a student
  *     parameters:
  *       - in: path
  *         name: id
@@ -53,47 +74,20 @@ router.post("/", createStudent);
  *         description: Student MongoDB ID
  *         schema:
  *           type: string
- *     responses:
- *       200:
- *         description: Student fetched successfully
- *       404:
- *         description: Student not found
- */
-router.get("/:id", async (req, res) => {
-  try {
-    const Student = require("../models/Student");
-
-    const student = await Student.findById(req.params.id);
-
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: "Student not found"
-      });
-    }
-
-    res.status(200).json(student);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * @swagger
- * /api/students/{id}:
- *   put:
- *     summary: Update a student
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Student ID
- *         schema:
- *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             fullName: "Nimal Perera Updated"
+ *             phone: "0779876543"
+ *             department: "IT"
+ *             roomNumber: "A102"
  *     responses:
  *       200:
  *         description: Student updated successfully
+ *       404:
+ *         description: Student not found
  */
 router.put("/:id", updateStudent);
 
@@ -106,12 +100,14 @@ router.put("/:id", updateStudent);
  *       - in: path
  *         name: id
  *         required: true
- *         description: Student ID
+ *         description: Student MongoDB ID
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: Student deleted successfully
+ *       404:
+ *         description: Student not found
  */
 router.delete("/:id", deleteStudent);
 
