@@ -8,6 +8,8 @@ const {
   deleteRoom
 } = require("../controllers/roomController");
 
+const Room = require("../models/Room");
+
 /**
  * @swagger
  * /api/rooms:
@@ -40,6 +42,42 @@ router.get("/", getRooms);
  *         description: Room created successfully
  */
 router.post("/", createRoom);
+
+/**
+ * @swagger
+ * /api/rooms/{id}:
+ *   get:
+ *     summary: Get a room by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Room MongoDB ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Room fetched successfully
+ *       404:
+ *         description: Room not found
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    const room = await Room.findById(req.params.id);
+
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found"
+      });
+    }
+
+    res.status(200).json(room);
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 /**
  * @swagger
