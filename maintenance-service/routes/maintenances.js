@@ -3,6 +3,7 @@ const router = express.Router();
 
 const {
   getTasks,
+  getTaskById, // ✅ NEW
   createTask,
   updateTask,
   deleteTask
@@ -18,6 +19,26 @@ const {
  *         description: List of tasks
  */
 router.get("/", getTasks);
+
+/**
+ * @swagger
+ * /api/maintenance/{id}:
+ *   get:
+ *     summary: Get maintenance task by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: MongoDB Task ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Task found successfully
+ *       404:
+ *         description: Task not found
+ */
+router.get("/:id", getTaskById);
 
 /**
  * @swagger
@@ -48,7 +69,7 @@ router.post("/", createTask);
  *       - in: path
  *         name: id
  *         required: true
- *         description: Task ID
+ *         description: MongoDB Task ID
  *         schema:
  *           type: string
  *     requestBody:
@@ -60,6 +81,8 @@ router.post("/", createTask);
  *     responses:
  *       200:
  *         description: Task updated successfully
+ *       404:
+ *         description: Task not found
  */
 router.put("/:id", updateTask);
 
@@ -72,12 +95,14 @@ router.put("/:id", updateTask);
  *       - in: path
  *         name: id
  *         required: true
- *         description: Task ID
+ *         description: MongoDB Task ID
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: Task deleted successfully
+ *       404:
+ *         description: Task not found
  */
 router.delete("/:id", deleteTask);
 

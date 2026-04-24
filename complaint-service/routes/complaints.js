@@ -3,6 +3,7 @@ const router = express.Router();
 
 const {
   getComplaints,
+  getComplaintById,
   createComplaint,
   updateComplaint,
   deleteComplaint
@@ -18,6 +19,26 @@ const {
  *         description: List of complaints
  */
 router.get("/", getComplaints);
+
+/**
+ * @swagger
+ * /api/complaints/{id}:
+ *   get:
+ *     summary: Get complaint by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: MongoDB Complaint ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Complaint found successfully
+ *       404:
+ *         description: Complaint not found
+ */
+router.get("/:id", getComplaintById);
 
 /**
  * @swagger
@@ -49,7 +70,7 @@ router.post("/", createComplaint);
  *       - in: path
  *         name: id
  *         required: true
- *         description: Complaint ID
+ *         description: MongoDB Complaint ID
  *         schema:
  *           type: string
  *     requestBody:
@@ -61,6 +82,8 @@ router.post("/", createComplaint);
  *     responses:
  *       200:
  *         description: Complaint updated successfully
+ *       404:
+ *         description: Complaint not found
  */
 router.put("/:id", updateComplaint);
 
@@ -73,12 +96,14 @@ router.put("/:id", updateComplaint);
  *       - in: path
  *         name: id
  *         required: true
- *         description: Complaint ID
+ *         description: MongoDB Complaint ID
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: Complaint deleted successfully
+ *       404:
+ *         description: Complaint not found
  */
 router.delete("/:id", deleteComplaint);
 
