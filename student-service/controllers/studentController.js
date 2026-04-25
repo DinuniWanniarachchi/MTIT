@@ -1,4 +1,5 @@
 const Student = require("../models/Student");
+const { validationResult } = require("express-validator");
 
 // GET all students
 exports.getStudents = async (req, res) => {
@@ -48,6 +49,15 @@ exports.createStudent = async (req, res) => {
   try {
     console.log("Student create body:", req.body);
 
+    // ✅ VALIDATION CHECK
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const student = new Student(req.body);
     const saved = await student.save();
 
@@ -68,6 +78,15 @@ exports.createStudent = async (req, res) => {
 // UPDATE student
 exports.updateStudent = async (req, res) => {
   try {
+    // ✅ VALIDATION CHECK
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const updated = await Student.findByIdAndUpdate(
       req.params.id,
       req.body,

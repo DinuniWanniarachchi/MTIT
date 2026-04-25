@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { body } = require("express-validator");
 
 const {
   getStudents,
@@ -8,6 +9,15 @@ const {
   updateStudent,
   deleteStudent
 } = require("../controllers/studentController");
+
+// Student validation rules
+const studentValidation = [
+  body("phone")
+    .notEmpty()
+    .withMessage("Phone number is required")
+    .matches(/^(?:\+94|0)?7\d{8}$/)
+    .withMessage("Invalid phone number format. Use 0771234567 or +94771234567")
+];
 
 /**
  * @swagger
@@ -59,8 +69,10 @@ router.get("/:id", getStudentById);
  *     responses:
  *       201:
  *         description: Student created successfully
+ *       400:
+ *         description: Invalid phone number
  */
-router.post("/", createStudent);
+router.post("/", studentValidation, createStudent);
 
 /**
  * @swagger
@@ -86,10 +98,12 @@ router.post("/", createStudent);
  *     responses:
  *       200:
  *         description: Student updated successfully
+ *       400:
+ *         description: Invalid phone number
  *       404:
  *         description: Student not found
  */
-router.put("/:id", updateStudent);
+router.put("/:id", studentValidation, updateStudent);
 
 /**
  * @swagger
