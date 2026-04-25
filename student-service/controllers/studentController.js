@@ -47,10 +47,8 @@ exports.getStudentById = async (req, res) => {
 // CREATE student
 exports.createStudent = async (req, res) => {
   try {
-    console.log("Student create body:", req.body);
-
-    // ✅ VALIDATION CHECK
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
@@ -78,8 +76,8 @@ exports.createStudent = async (req, res) => {
 // UPDATE student
 exports.updateStudent = async (req, res) => {
   try {
-    // ✅ VALIDATION CHECK
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,

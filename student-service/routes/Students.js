@@ -12,11 +12,35 @@ const {
 
 // Student validation rules
 const studentValidation = [
+  body("studentId")
+    .notEmpty()
+    .withMessage("Student ID is required"),
+
+  body("fullName")
+    .notEmpty()
+    .withMessage("Full name is required")
+    .isLength({ min: 3 })
+    .withMessage("Full name must be at least 3 characters"),
+
+  body("email")
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Invalid email format"),
+
   body("phone")
     .notEmpty()
     .withMessage("Phone number is required")
     .matches(/^(?:\+94|0)?7\d{8}$/)
-    .withMessage("Invalid phone number format. Use 0771234567 or +94771234567")
+    .withMessage("Invalid phone number format. Use 0771234567 or +94771234567"),
+
+  body("department")
+    .notEmpty()
+    .withMessage("Department is required"),
+
+  body("roomNumber")
+    .notEmpty()
+    .withMessage("Room number is required")
 ];
 
 /**
@@ -35,18 +59,6 @@ router.get("/", getStudents);
  * /api/students/{id}:
  *   get:
  *     summary: Get a student by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Student MongoDB ID
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Student fetched successfully
- *       404:
- *         description: Student not found
  */
 router.get("/:id", getStudentById);
 
@@ -55,22 +67,6 @@ router.get("/:id", getStudentById);
  * /api/students:
  *   post:
  *     summary: Create student
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           example:
- *             studentId: "S001"
- *             fullName: "Nimal Perera"
- *             email: "nimal@gmail.com"
- *             phone: "0771234567"
- *             department: "IT"
- *             roomNumber: "A101"
- *     responses:
- *       201:
- *         description: Student created successfully
- *       400:
- *         description: Invalid phone number
  */
 router.post("/", studentValidation, createStudent);
 
@@ -79,29 +75,6 @@ router.post("/", studentValidation, createStudent);
  * /api/students/{id}:
  *   put:
  *     summary: Update a student
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Student MongoDB ID
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           example:
- *             fullName: "Nimal Perera Updated"
- *             phone: "0779876543"
- *             department: "IT"
- *             roomNumber: "A102"
- *     responses:
- *       200:
- *         description: Student updated successfully
- *       400:
- *         description: Invalid phone number
- *       404:
- *         description: Student not found
  */
 router.put("/:id", studentValidation, updateStudent);
 
@@ -110,18 +83,6 @@ router.put("/:id", studentValidation, updateStudent);
  * /api/students/{id}:
  *   delete:
  *     summary: Delete a student
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Student MongoDB ID
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Student deleted successfully
- *       404:
- *         description: Student not found
  */
 router.delete("/:id", deleteStudent);
 
