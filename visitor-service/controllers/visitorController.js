@@ -1,4 +1,5 @@
 const Visitor = require("../models/Visitor");
+const { validationResult } = require("express-validator");
 
 // GET all visitors
 exports.getVisitors = async (req, res) => {
@@ -44,6 +45,15 @@ exports.getVisitorById = async (req, res) => {
 // CREATE visitor
 exports.createVisitor = async (req, res) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const visitor = new Visitor(req.body);
     const saved = await visitor.save();
 
@@ -63,6 +73,15 @@ exports.createVisitor = async (req, res) => {
 // UPDATE visitor
 exports.updateVisitor = async (req, res) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const updated = await Visitor.findByIdAndUpdate(
       req.params.id,
       req.body,

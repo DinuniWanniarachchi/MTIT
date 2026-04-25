@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { body } = require("express-validator");
 
 const {
   getComplaints,
@@ -9,7 +10,34 @@ const {
   deleteComplaint
 } = require("../controllers/complaintController");
 
-const Complaint = require("../models/Complaint");
+// Complaint validation rules
+const complaintValidation = [
+  body("complaintId")
+    .notEmpty()
+    .withMessage("Complaint ID is required"),
+
+  body("studentId")
+    .notEmpty()
+    .withMessage("Student ID is required"),
+
+  body("title")
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ min: 3 })
+    .withMessage("Title must be at least 3 characters"),
+
+  body("description")
+    .notEmpty()
+    .withMessage("Description is required")
+    .isLength({ min: 5 })
+    .withMessage("Description must be at least 5 characters"),
+
+  body("status")
+    .notEmpty()
+    .withMessage("Status is required")
+    .isIn(["Pending", "In Progress", "Resolved", "Rejected"])
+    .withMessage("Status must be Pending, In Progress, Resolved, or Rejected")
+];
 
 /**
  * @swagger
@@ -60,44 +88,10 @@ router.get("/:id", getComplaintById);
  *     responses:
  *       201:
  *         description: Complaint created successfully
+ *       400:
+ *         description: Validation error
  */
-router.post("/", createComplaint);
-
-/**
- * @swagger
- * /api/complaints/{id}:
- *   get:
- *     summary: Get a complaint by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Complaint MongoDB ID
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Complaint fetched successfully
- *       404:
- *         description: Complaint not found
- */
-router.get("/:id", async (req, res) => {
-  try {
-    const complaint = await Complaint.findById(req.params.id);
-
-    if (!complaint) {
-      return res.status(404).json({
-        success: false,
-        message: "Complaint not found"
-      });
-    }
-
-    res.status(200).json(complaint);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.post("/", complaintValidation, createComplaint);
 
 /**
  * @swagger
@@ -116,14 +110,20 @@ router.get("/:id", async (req, res) => {
  *       content:
  *         application/json:
  *           example:
+ *             complaintId: "C001"
+ *             studentId: "S001"
+ *             title: "Broken Light"
+ *             description: "Light not working"
  *             status: "Resolved"
  *     responses:
  *       200:
  *         description: Complaint updated successfully
+ *       400:
+ *         description: Validation error
  *       404:
  *         description: Complaint not found
  */
-router.put("/:id", updateComplaint);
+router.put("/:id", complaintValidation, updateComplaint);
 
 /**
  * @swagger

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { body } = require("express-validator");
 
 const {
   getVisitors,
@@ -8,6 +9,35 @@ const {
   updateVisitor,
   deleteVisitor
 } = require("../controllers/visitorController");
+
+// Visitor validation rules
+const visitorValidation = [
+  body("visitorId")
+    .notEmpty()
+    .withMessage("Visitor ID is required"),
+
+  body("name")
+    .notEmpty()
+    .withMessage("Visitor name is required")
+    .isLength({ min: 3 })
+    .withMessage("Visitor name must be at least 3 characters"),
+
+  body("contact")
+    .notEmpty()
+    .withMessage("Contact number is required")
+    .matches(/^(?:\+94|0)?7\d{8}$/)
+    .withMessage("Invalid contact number format. Use 0771234567 or +94771234567"),
+
+  body("studentId")
+    .notEmpty()
+    .withMessage("Student ID is required"),
+
+  body("purpose")
+    .notEmpty()
+    .withMessage("Purpose is required")
+    .isLength({ min: 3 })
+    .withMessage("Purpose must be at least 3 characters")
+];
 
 /**
  * @swagger
@@ -58,8 +88,10 @@ router.get("/:id", getVisitorById);
  *     responses:
  *       201:
  *         description: Visitor created successfully
+ *       400:
+ *         description: Validation error
  */
-router.post("/", createVisitor);
+router.post("/", visitorValidation, createVisitor);
 
 /**
  * @swagger
@@ -78,14 +110,20 @@ router.post("/", createVisitor);
  *       content:
  *         application/json:
  *           example:
+ *             visitorId: "V001"
+ *             name: "John Silva"
+ *             contact: "0771234567"
+ *             studentId: "S001"
  *             purpose: "Emergency visit"
  *     responses:
  *       200:
  *         description: Visitor updated successfully
+ *       400:
+ *         description: Validation error
  *       404:
  *         description: Visitor not found
  */
-router.put("/:id", updateVisitor);
+router.put("/:id", visitorValidation, updateVisitor);
 
 /**
  * @swagger

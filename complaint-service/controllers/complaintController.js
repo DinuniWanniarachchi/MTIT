@@ -1,4 +1,5 @@
 const Complaint = require("../models/Complaint");
+const { validationResult } = require("express-validator");
 
 // GET all complaints
 exports.getComplaints = async (req, res) => {
@@ -44,6 +45,15 @@ exports.getComplaintById = async (req, res) => {
 // CREATE complaint
 exports.createComplaint = async (req, res) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const complaint = new Complaint(req.body);
     const saved = await complaint.save();
 
@@ -63,6 +73,15 @@ exports.createComplaint = async (req, res) => {
 // UPDATE complaint
 exports.updateComplaint = async (req, res) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const updated = await Complaint.findByIdAndUpdate(
       req.params.id,
       req.body,
