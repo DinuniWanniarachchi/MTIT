@@ -10,12 +10,37 @@ const {
   deleteComplaint
 } = require("../controllers/complaintController");
 
-// Complaint validation rules
-const complaintValidation = [
+// CREATE validation
+const complaintCreateValidation = [
   body("complaintId")
     .notEmpty()
     .withMessage("Complaint ID is required"),
 
+  body("studentId")
+    .notEmpty()
+    .withMessage("Student ID is required"),
+
+  body("title")
+    .notEmpty()
+    .withMessage("Title is required")
+    .isLength({ min: 3 })
+    .withMessage("Title must be at least 3 characters"),
+
+  body("description")
+    .notEmpty()
+    .withMessage("Description is required")
+    .isLength({ min: 5 })
+    .withMessage("Description must be at least 5 characters"),
+
+  body("status")
+    .notEmpty()
+    .withMessage("Status is required")
+    .isIn(["Pending", "In Progress", "Resolved", "Rejected"])
+    .withMessage("Status must be Pending, In Progress, Resolved, or Rejected")
+];
+
+// UPDATE validation
+const complaintUpdateValidation = [
   body("studentId")
     .notEmpty()
     .withMessage("Student ID is required"),
@@ -54,19 +79,7 @@ router.get("/", getComplaints);
  * @swagger
  * /api/complaints/{id}:
  *   get:
- *     summary: Get complaint by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: MongoDB Complaint ID
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Complaint found successfully
- *       404:
- *         description: Complaint not found
+ *     summary: Get complaint by MongoDB ID
  */
 router.get("/:id", getComplaintById);
 
@@ -80,18 +93,18 @@ router.get("/:id", getComplaintById);
  *       content:
  *         application/json:
  *           example:
- *             complaintId: "C001"
+ *             complaintId: "C002"
  *             studentId: "S001"
- *             title: "Broken Light"
- *             description: "Light not working"
+ *             title: "Broken Fan"
+ *             description: "Fan is not working"
  *             status: "Pending"
  *     responses:
  *       201:
  *         description: Complaint created successfully
  *       400:
- *         description: Validation error
+ *         description: Validation error or duplicate complaint ID
  */
-router.post("/", complaintValidation, createComplaint);
+router.post("/", complaintCreateValidation, createComplaint);
 
 /**
  * @swagger
@@ -110,10 +123,9 @@ router.post("/", complaintValidation, createComplaint);
  *       content:
  *         application/json:
  *           example:
- *             complaintId: "C001"
  *             studentId: "S001"
- *             title: "Broken Light"
- *             description: "Light not working"
+ *             title: "Broken Fan"
+ *             description: "Fan is repaired now"
  *             status: "Resolved"
  *     responses:
  *       200:
@@ -123,25 +135,13 @@ router.post("/", complaintValidation, createComplaint);
  *       404:
  *         description: Complaint not found
  */
-router.put("/:id", complaintValidation, updateComplaint);
+router.put("/:id", complaintUpdateValidation, updateComplaint);
 
 /**
  * @swagger
  * /api/complaints/{id}:
  *   delete:
  *     summary: Delete a complaint
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: MongoDB Complaint ID
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Complaint deleted successfully
- *       404:
- *         description: Complaint not found
  */
 router.delete("/:id", deleteComplaint);
 

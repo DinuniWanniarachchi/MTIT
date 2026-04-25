@@ -63,6 +63,13 @@ exports.createComplaint = async (req, res) => {
       data: saved
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "Complaint ID already exists. Please use a different complaintId."
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: error.message
@@ -84,8 +91,16 @@ exports.updateComplaint = async (req, res) => {
 
     const updated = await Complaint.findByIdAndUpdate(
       req.params.id,
-      req.body,
-      { new: true }
+      {
+        studentId: req.body.studentId,
+        title: req.body.title,
+        description: req.body.description,
+        status: req.body.status
+      },
+      {
+        new: true,
+        runValidators: true
+      }
     );
 
     if (!updated) {
