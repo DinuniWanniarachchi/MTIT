@@ -1,4 +1,5 @@
 const Maintenance = require("../models/Maintenance");
+const { validationResult } = require("express-validator");
 
 // GET all tasks
 exports.getTasks = async (req, res) => {
@@ -17,7 +18,7 @@ exports.getTasks = async (req, res) => {
   }
 };
 
-// ✅ GET task by ID (NEW)
+// GET task by ID
 exports.getTaskById = async (req, res) => {
   try {
     const task = await Maintenance.findById(req.params.id);
@@ -44,6 +45,15 @@ exports.getTaskById = async (req, res) => {
 // CREATE task
 exports.createTask = async (req, res) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const task = new Maintenance(req.body);
     const saved = await task.save();
 
@@ -63,6 +73,15 @@ exports.createTask = async (req, res) => {
 // UPDATE task
 exports.updateTask = async (req, res) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const updated = await Maintenance.findByIdAndUpdate(
       req.params.id,
       req.body,

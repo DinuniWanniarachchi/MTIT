@@ -1,15 +1,37 @@
 const express = require("express");
 const router = express.Router();
+const { body } = require("express-validator");
 
 const {
   getTasks,
-  getTaskById, // ✅ NEW
+  getTaskById,
   createTask,
   updateTask,
   deleteTask
 } = require("../controllers/maintenanceController");
 
-const Maintenance = require("../models/Maintenance");
+// Validation rules
+const maintenanceValidation = [
+  body("taskId")
+    .notEmpty()
+    .withMessage("Task ID is required"),
+
+  body("roomNumber")
+    .notEmpty()
+    .withMessage("Room number is required"),
+
+  body("description")
+    .notEmpty()
+    .withMessage("Description is required")
+    .isLength({ min: 5 })
+    .withMessage("Description must be at least 5 characters"),
+
+  body("status")
+    .notEmpty()
+    .withMessage("Status is required")
+    .isIn(["Pending", "In Progress", "Completed"])
+    .withMessage("Status must be Pending, In Progress, or Completed")
+];
 
 /**
  * @swagger
@@ -59,44 +81,10 @@ router.get("/:id", getTaskById);
  *     responses:
  *       201:
  *         description: Task created successfully
+ *       400:
+ *         description: Validation error
  */
-router.post("/", createTask);
-
-/**
- * @swagger
- * /api/maintenance/{id}:
- *   get:
- *     summary: Get a maintenance task by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Maintenance MongoDB ID
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Task fetched successfully
- *       404:
- *         description: Task not found
- */
-router.get("/:id", async (req, res) => {
-  try {
-    const task = await Maintenance.findById(req.params.id);
-
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: "Task not found"
-      });
-    }
-
-    res.status(200).json(task);
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.post("/", maintenanceValidation, createTask);
 
 /**
  * @swagger
@@ -115,14 +103,19 @@ router.get("/:id", async (req, res) => {
  *       content:
  *         application/json:
  *           example:
+ *             taskId: "T001"
+ *             roomNumber: "A101"
+ *             description: "Fix fan issue"
  *             status: "Completed"
  *     responses:
  *       200:
  *         description: Task updated successfully
+ *       400:
+ *         description: Validation error
  *       404:
  *         description: Task not found
  */
-router.put("/:id", updateTask);
+router.put("/:id", maintenanceValidation, updateTask);
 
 /**
  * @swagger
