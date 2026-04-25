@@ -1,4 +1,5 @@
 const Room = require("../models/Room");
+const { validationResult } = require("express-validator");
 
 // GET all rooms
 exports.getRooms = async (req, res) => {
@@ -17,7 +18,7 @@ exports.getRooms = async (req, res) => {
   }
 };
 
-// ✅ GET room by ID (NEW - moved from route)
+// GET room by ID
 exports.getRoomById = async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
@@ -44,6 +45,16 @@ exports.getRoomById = async (req, res) => {
 // CREATE room
 exports.createRoom = async (req, res) => {
   try {
+    // Validation check
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const room = new Room(req.body);
     const saved = await room.save();
 
@@ -63,6 +74,16 @@ exports.createRoom = async (req, res) => {
 // UPDATE room
 exports.updateRoom = async (req, res) => {
   try {
+    // Validation check
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
     const updated = await Room.findByIdAndUpdate(
       req.params.id,
       req.body,
